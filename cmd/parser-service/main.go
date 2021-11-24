@@ -2,30 +2,40 @@ package main
 
 import (
 	"fmt"
-	"github.com/Shemistan/parser-centra-bank-rf/internal/utils"
+	"github.com/Shemistan/parser-centra-bank-rf/internal/parser"
 	"log"
+	"os"
 )
 
 func main() {
-	url := "https://www.cbr.ru/scripts/XML_daily_eng.asp?date_req=11/11/2020)"
+	var date string
+	var amount int
 
-	makeReq, errReq := utils.MakeRequest(url)
-	if errReq != nil {
-		log.Printf("error request: %s", errReq.Error())
-	}
-
-	editSlice, err := utils.EditingSlice(makeReq)
+	fmt.Print("Input the start of the analysis period in day/month/year format(\"23/08/2018\"):\n--->")
+	_, err := fmt.Fscan(os.Stdin, &date)
 	if err != nil {
-		log.Printf("error editing slice: %s", err.Error())
+		return
 	}
 
-	val, name, errSearch := utils.SearchMinMax(editSlice)
-	if errSearch != nil {
-		log.Printf("error searching min/max value: %s", errSearch.Error())
+	fmt.Print("Input the required number of days (90):\n--->")
+	_, err = fmt.Fscan(os.Stdin, &amount)
+	if err != nil {
+		return
 	}
 
-	fmt.Printf("data: %v", name["day"])
-	fmt.Printf("max value %v - %v", name["max"], val["max"])
-	fmt.Printf("min value %v - %v", name["min"], val["min"])
+	exmPars := parser.NewParser()
+	err = exmPars.Init(date, amount)
+	if err != nil {
+		log.Printf("error init: %s", err.Error())
+	}
 
+	err = exmPars.Run()
+	if err != nil {
+		log.Printf("error run: %s", err.Error())
+	}
+	fmt.Print("\n \n \n \n \n")
+	err = exmPars.Show()
+	if err != nil {
+		log.Printf("error show: %s", err.Error())
+	}
 }
